@@ -1,0 +1,44 @@
+operations:
+  view:
+    - type: web
+      impl: index.html
+actions: actions
+web: web-src
+runtimeManifest:
+  packages:
+    dx-excshell-1:
+      license: Apache-2.0
+      actions:
+        customer-arrived:
+          function: actions/customer-arrived/index.js
+          web: 'yes'
+          runtime: 'nodejs:14'
+          inputs:
+            LOG_LEVEL: $LOG_LEVEL
+            ADOBE_COMMERCE_ORDERS_REST_ENDPOINT: $ADOBE_COMMERCE_ORDERS_REST_ENDPOINT
+            ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN: $ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN
+          annotations:
+            require-adobe-auth: false
+            final: true
+        get-orders:
+          function: actions/get-orders/index.js
+          web: 'yes'
+          runtime: 'nodejs:14'
+          inputs:
+            LOG_LEVEL: $LOG_LEVEL
+            ADOBE_COMMERCE_ORDERS_REST_ENDPOINT: $ADOBE_COMMERCE_ORDERS_REST_ENDPOINT
+            ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN: $ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN
+          annotations:
+            require-adobe-auth: false
+            final: true
+        close-order:
+          function: actions/close-order/index.js
+          web: 'yes'
+          runtime: 'nodejs:14'
+          inputs:
+            LOG_LEVEL: $LOG_LEVEL
+            ADOBE_COMMERCE_ORDERS_REST_ENDPOINT: $ADOBE_COMMERCE_ORDERS_REST_ENDPOINT
+            ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN: $ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN
+          annotations:
+            require-adobe-auth: false
+            final: true
