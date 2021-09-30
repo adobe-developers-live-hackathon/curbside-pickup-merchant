@@ -1,4 +1,4 @@
-# 584PurpleSole
+# Curbside Pick App Merchant App
 
 Welcome to my Adobe I/O Application!
 
