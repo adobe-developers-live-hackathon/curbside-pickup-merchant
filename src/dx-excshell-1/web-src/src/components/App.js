@@ -143,7 +143,18 @@ function App(props) {
   }
 
   async function closeOrder (orderId) {
-    // Hackathon TODO: Implement calling close-order action to close the processed order
+    const params = {
+      orderId: orderId,
+    }
+
+    try {
+      const actionResponse = await actionWebInvoke(actions['close-order'], {}, params)
+      console.log(`Response from close-order action:`, actionResponse)
+      return actionResponse
+    } catch (e) {
+      console.error(e)
+      return null
+    }
   }
 }
 
