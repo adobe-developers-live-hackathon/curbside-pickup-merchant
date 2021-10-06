@@ -49,7 +49,20 @@ async function main (params) {
 
     logger.debug('closeOrderRes: ' + JSON.stringify(closeOrderRes))
 
-    // Hackathon TODO: Implement removal of the closed order from the state (storage)
+    // Save data in state
+    const state = await stateLib.init()
+    let orders = await state.get(`curbside-pickup`);
+    if (orders?.value) {
+      orders = orders.value;
+    } else {
+      orders = {};
+    }
+
+    if (orders[params.orderId]) {
+      orders[params.orderId] = undefined
+      await state.put(`curbside-pickup`, orders, { ttl: -1 });
+      logger.debug('Orders: ' + JSON.stringify(orders))
+    }
 
     return {
       statusCode: 200,

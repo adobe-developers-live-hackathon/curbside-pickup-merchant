@@ -23,8 +23,30 @@ async function main(params) {
       return errorResponse(400, errorMessage, logger)
     }
 
-    // Hackathon TODO: Implement retrieval of an order by incoming parameters into orderData from Adobe Commerce instance
-    // Also implement checks returning 400 error if the order doesn't and if the order's e-mail differs from the specified one
+    // get order data from Adobe Commerce
+    const getOrderDataEndpoint = `${params.ADOBE_COMMERCE_ORDERS_REST_ENDPOINT}/${params.orderNumber}`
+    logger.debug(`getOrderDataEndpoint: ${getOrderDataEndpoint}`)
+    const getOrderDataRes = await fetch(getOrderDataEndpoint, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + params.ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN
+      }
+    })
+    if (!getOrderDataRes.ok) {
+      // checking the existence of an order
+      if (getOrderDataRes.status === 404) {
+        return errorResponse(400, 'Order not found', logger)
+      }
+      throw new Error('request to ' + getOrderDataEndpoint + ' failed with status code ' + getOrderDataRes.status)
+    }
+    const orderData = await getOrderDataRes.json()
+    logger.debug('Order data: ' + stringParameters(orderData))
+
+    // check customer email
+    if (params.customerEmail !== orderData.customer_email) {
+      return errorResponse(400, 'This Email does not match the one the order was placed with', logger)
+    }
 
     // Save data in state
     const state = await stateLib.init()
