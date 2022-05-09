@@ -1,0 +1,31 @@
+{
+    "project": {
+        "id": "4566206088344768019",
+        "name": "106TealDonkey",
+        "title": "Merchant App pmayer",
+        "org": {
+            "id": "55355",
+            "name": "Sales Velocity Demo System",
+            "ims_org_id": "E8475990589B24A90A495DDD@AdobeOrg"
+        },
+        "workspace": {
+            "id": "4566206088344772197",
+            "name": "Stage",
+            "title": "Stage",
+            "action_url": "https://55355-106tealdonkey-stage.adobeioruntime.net",
+            "app_url": "https://55355-106tealdonkey-stage.adobeio-static.net",
+            "details": {
+                "credentials": [],
+                "services": [],
+                "runtime": {
+                    "namespaces": [
+                        {
+                            "name": "55355-106tealdonkey-stage",
+                            "auth": "10612686-ea24-44b1-b918-33985f41222a:WP1Edim5q45L7y5yFD10qrG0Nie5wS0P261eoi58Cv2G633CReK6ysYUKq7UMWEX"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
