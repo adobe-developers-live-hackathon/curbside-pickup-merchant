@@ -6,9 +6,6 @@ import React, { useState, useEffect } from 'react';
 import {Provider, defaultTheme, Heading, Button, Text, Grid, View, Divider, Flex, StatusLight, ProgressCircle} from '@adobe/react-spectrum'
 import ErrorBoundary from 'react-error-boundary'
 import {HashRouter as Router} from 'react-router-dom'
-
-import actionWebInvoke from "../utils";
-import actions from "../config.json";
 import Orders from './Orders';
 
 function App(props) {

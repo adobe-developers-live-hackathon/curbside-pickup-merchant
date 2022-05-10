@@ -23,28 +23,44 @@ async function main (params) {
     // Load orders data from state lib
     const state = await stateLib.init()
     const ordersData = await state.get('curbside-pickup')
-    logger.debug(`Orders from storage: ${JSON.stringify(ordersData)}`)
-    if (!ordersData || !ordersData.value || ordersData.value.length === 0) {
-      return {
-        statusCode: 200,
-        body: {
-          orders: []
-        }
-      }
-    }
+    // logger.debug(`Orders from storage: ${JSON.stringify(ordersData)}`)
+    // if (!ordersData || !ordersData.value || ordersData.value.length === 0) {
+    //   return {
+    //     statusCode: 200,
+    //     body: {
+    //       orders: []
+    //     }
+    //   }
+    // }
 
     // Make call to Adobe Commerce
-
+    // console.log(`VALUES: ${Object.keys(ordersData.value).join(',')}`)
     // Build query string
+    // const queryStringParameters = {
+    //   "searchCriteria": {
+    //     "filter_groups": [
+    //       {
+    //         "filters": [
+    //           {
+    //             "field": "entity_id",
+    //             "value": Object.keys(ordersData.value).join(','),
+    //             "condition_type": "in"
+    //           }
+    //         ]
+    //       }
+    //     ]
+    //   }
+    // }
+
     const queryStringParameters = {
       "searchCriteria": {
         "filter_groups": [
           {
             "filters": [
               {
-                "field": "entity_id",
-                "value": Object.keys(ordersData.value).join(','),
-                "condition_type": "in"
+                "field": "status",
+                "value": "pending",
+                "condition_type": "eq"
               }
             ]
           }
@@ -57,6 +73,8 @@ async function main (params) {
     // searchCriteria[filterGroups][0][filters][0][field]=entity_id&searchCriteria[filterGroups][0][filters][0][value]=3,5&searchCriteria[filterGroups][0][filters][0][conditionType]=in
 
     const ordersEndpoint = `${params.ADOBE_COMMERCE_ORDERS_REST_ENDPOINT}?${queryString}`
+    // const ordersEndpoint = `${params.ADOBE_COMMERCE_ORDERS_REST_ENDPOINT}?searchCriteria=all`
+
     logger.debug(`ordersEndpoint: ${ordersEndpoint}`)
     const getOrderDataRes = await fetch(ordersEndpoint, {
       method: 'GET',
@@ -69,9 +87,14 @@ async function main (params) {
       throw new Error('request to ' + ordersEndpoint + ' failed with status code ' + getOrderDataRes.status)
     }
     let orders = await getOrderDataRes.json()
-    logger.debug(`Orders: ${JSON.stringify(orders)}`)
-    orders = orders.items.map(obj=> ({ ...obj, parking_space: ordersData.value[obj.entity_id].parking_space }))
-    logger.debug(`Orders: ${JSON.stringify(orders)}`)
+    // logger.debug(`Orders: ${JSON.stringify(orders)}`)
+    orders = orders.items.map(obj=> ({ ...obj, parking_space: ordersData.value[obj.entity_id] ?  ordersData.value[obj.entity_id].parking_space : "Waiting for pickup"}))
+    // logger.debug(`ORDERS WITH PARKING: ${JSON.stringify(orders)}`)
+
+    await state.put('curbside-pickup', orders, { ttl: 600 });
+    const newState = await state.get('curbside-pickup')
+    logger.debug(`NEW STATE: ${JSON.stringify(newState)}`)    
+    
     return {
       statusCode: 200,
       body: {

@@ -1,23 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import {Provider, defaultTheme, Heading, Button, Text, Grid, View, Divider, Flex, StatusLight, ProgressCircle} from '@adobe/react-spectrum'
+import {Heading, Button, Text, Grid, View, Divider, Flex, StatusLight, ProgressCircle} from '@adobe/react-spectrum'
 import ErrorBoundary from 'react-error-boundary'
-import {HashRouter as Router} from 'react-router-dom'
-
 import actionWebInvoke from "../utils";
 import actions from "../config.json";
 
-const Orders = (props) => {
+const Orders = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [orderList, setOrderList] = useState([]);
     const [completingOrderId, setCompletingOrderId] = useState(undefined);
   
-    useEffect(() => {
-      const interval = setInterval(() => {
-        (async () => await refreshOrders())();
-      }, 5000)
+    // useEffect(() => {
+    //   const interval = setInterval(() => {
+    //     (async () => await refreshOrders())();
+    //   }, 5000)
   
-      return () => clearInterval(interval)
-    }, []);
+    //   return () => clearInterval(interval)
+    // }, []);
+
+    useEffect(() => {
+        (async () => await refreshOrders())()
+    }, [])
   
     return (
       <ErrorBoundary onError={onError} FallbackComponent={fallbackComponent}>
@@ -41,7 +43,10 @@ const Orders = (props) => {
                           <View gridArea="name"><h4>{order.customer_firstname} {order.customer_lastname}</h4></View>
                           <View gridArea="items"><Text slot="description">Items: {order.items.map(e => e.name).join(", ")}</Text></View>
                           <View gridArea="parking">
-                            <StatusLight variant="negative"><i>Parking space #{order.parking_space}</i></StatusLight>
+                              {order.parking_space.length === 1 
+                              ? <StatusLight variant="negative"><i>Parking space #{order.parking_space}</i></StatusLight>
+                              : <StatusLight variant="negative"><i>{order.parking_space}</i></StatusLight>
+                              }
                           </View>
                           <View gridArea="cta" alignSelf="center">
                             <Button
