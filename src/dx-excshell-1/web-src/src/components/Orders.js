@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {Heading, Button, Text, Grid, View, Divider, Flex, StatusLight, ProgressCircle} from '@adobe/react-spectrum'
+import {Heading, Button, Text, Grid, View, Divider, Flex, StatusLight, ProgressCircle, Image} from '@adobe/react-spectrum'
 import ErrorBoundary from 'react-error-boundary'
 import actionWebInvoke from "../utils";
 import actions from "../config.json";
@@ -40,12 +40,13 @@ const Orders = () => {
                           rows={["size-500", "size-500", "size-500", "size-500"]}
                         >
                           <View gridArea="orderNumber"><h3>Order #{order.entity_id}</h3></View>
+                          {/* <View gridArea="image"><Image src={order.productImage} alt="product image"/></View> */}
                           <View gridArea="name"><h4>{order.customer_firstname} {order.customer_lastname}</h4></View>
                           <View gridArea="items"><Text slot="description">Items: {order.items.map(e => e.name).join(", ")}</Text></View>
                           <View gridArea="parking">
-                              {order.parking_space.length === 1 
-                              ? <StatusLight variant="negative"><i>Parking space #{order.parking_space}</i></StatusLight>
-                              : <StatusLight variant="negative"><i>{order.parking_space}</i></StatusLight>
+                              {order.parking_space === "Waiting for pickup" 
+                              ? <StatusLight variant="negative"><i>{order.parking_space}</i></StatusLight>
+                              : <StatusLight variant="negative"><i>Parking space #{order.parking_space}</i></StatusLight>
                               }
                           </View>
                           <View gridArea="cta" alignSelf="center">

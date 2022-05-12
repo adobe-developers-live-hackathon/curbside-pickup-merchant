@@ -61,7 +61,7 @@ async function main(params) {
       parking_space: params.parkingSpace,
       created_at: (new Date()).getTime()
     }
-    await state.put(`curbside-pickup`, orders, { ttl: 600 });
+    await state.put(`curbside-pickup`, orders, { ttl: 60 });
     logger.debug('Orders: ' + JSON.stringify(orderData))
 
     return {
