@@ -53,11 +53,12 @@ async function main (params) {
     }
 
     let orders = await getOrderDataRes.json()
+    console.log("GET ORDERS:", orders)
     orders = await Promise.all(orders.items.map( async (obj) => {
       const productImage = await getProductImage(obj.items, params)
       return { ...obj, productImage, parking_space: ordersData ?  ordersData.value[obj.entity_id].parking_space : "Waiting for pickup"}
     }))
-    console.log(orders)
+    // console.log(orders)
     await state.put('curbside-pickup', orders, { ttl: 5 });
    
     return {

@@ -35,12 +35,17 @@ const Orders = () => {
                     return (
                       <div key={order.entity_id}>
                         <Grid
-                          areas={["orderNumber cta", "name  cta", "items cta", "parking  cta"]}
-                          columns={["2fr", "auto"]}
-                          rows={["size-500", "size-500", "size-500", "size-500"]}
+                          areas={[
+                                    "orderNumber image", 
+                                    "name        image", 
+                                    "items       image", 
+                                    "parking     image",
+                                    "complete    image"]}
+                          columns={["2fr", "2fr"]}
+                          rows={["size-500", "size-500", "size-500", "size-500", "size-500","size-500"]}
                         >
+                          <View gridArea="image" alignSelf="center"><Image src={order.productImage} alt="product image"/></View>
                           <View gridArea="orderNumber"><h3>Order #{order.entity_id}</h3></View>
-                          {/* <View gridArea="image"><Image src={order.productImage} alt="product image"/></View> */}
                           <View gridArea="name"><h4>{order.customer_firstname} {order.customer_lastname}</h4></View>
                           <View gridArea="items"><Text slot="description">Items: {order.items.map(e => e.name).join(", ")}</Text></View>
                           <View gridArea="parking">
@@ -49,8 +54,22 @@ const Orders = () => {
                               : <StatusLight variant="negative"><i>Parking space #{order.parking_space}</i></StatusLight>
                               }
                           </View>
-                          <View gridArea="cta" alignSelf="center">
+                          <View gridArea="complete">
                             <Button
+                                variant="cta"
+                                onPress={async () => {
+                                    setCompletingOrderId(order.entity_id)
+                                    await closeOrder(order.entity_id);
+                                    await refreshOrders()
+                                    setCompletingOrderId(undefined)
+                                }}
+                                isDisabled={completingOrderId !== undefined}
+                                >
+                                Complete
+                                </Button>
+                          </View>
+                          <View gridArea="cta" alignSelf="center">
+                            {/* <Button
                               variant="cta"
                               onPress={async () => {
                                 setCompletingOrderId(order.entity_id)
@@ -61,7 +80,7 @@ const Orders = () => {
                               isDisabled={completingOrderId !== undefined}
                             >
                               Complete
-                            </Button>
+                            </Button> */}
   
                             <ProgressCircle
                               aria-label="loading"
