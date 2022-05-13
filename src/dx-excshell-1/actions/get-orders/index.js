@@ -19,10 +19,6 @@ async function main (params) {
     // 'info' is the default level if not set
     logger.info('Calling the get-orders action')
 
-    // Load orders data from state lib
-    const state = await stateLib.init()
-    const ordersData = await state.get('curbside-pickup')
-
     const queryStringParameters = {
       "searchCriteria": {
         "filter_groups": [
@@ -53,13 +49,24 @@ async function main (params) {
     }
 
     let orders = await getOrderDataRes.json()
-    console.log("GET ORDERS:", orders)
+    // console.log("GET ORDERS:", orders)
+
+    // Load orders data from state lib
+    const state = await stateLib.init()
+    const ordersData = await state.get('curbside-pickup')
+    console.log("FROM STATE:", ordersData)
+    // console.log("FROM STOCK:", orders)
     orders = await Promise.all(orders.items.map( async (obj) => {
       const productImage = await getProductImage(obj.items, params)
-      return { ...obj, productImage, parking_space: ordersData ?  ordersData.value[obj.entity_id].parking_space : "Waiting for pickup"}
+      const entity_id = obj.entity_id
+      let parkingSpace;
+      if (ordersData && ordersData.value && ordersData.value[obj.entity_id]) parkingSpace = ordersData.value[obj.entity_id].parkingSpace;
+
+      // if (obj) return {entity_id: { ...obj, productImage, parking_space: ordersData && ordersData.value ?  ordersData.value[obj.entity_id].parking_space : "Waiting for pickup"}}
+      if (obj) return {[entity_id]: { ...obj, productImage, parkingSpace: parkingSpace || "Waiting for pickup"}}
     }))
-    // console.log(orders)
-    await state.put('curbside-pickup', orders, { ttl: 5 });
+    console.log("POST MAP:", orders)
+    await state.put('curbside-pickup', orders, { ttl: 30 });
    
     return {
       statusCode: 200,
@@ -80,7 +87,6 @@ async function getProductImage(order, params) {
   for (let items in order) sku = order[items].sku
 
   const mediaEndpoint = `${ADOBE_COMMERCE_PRODUCTS_REST_ENDPOINT}/${sku}/media`
-  
   const getMediaDataRes = await fetch(mediaEndpoint, {
     method: 'GET',
     headers: {

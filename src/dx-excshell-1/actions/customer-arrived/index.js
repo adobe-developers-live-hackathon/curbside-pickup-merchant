@@ -52,18 +52,25 @@ async function main(params) {
     const state = await stateLib.init()
     let orders = await state.get(`curbside-pickup`);
     if (orders?.value) {
-      orders = orders.value;
+      orders = orders.value[0];
     } else {
       orders = {};
     }
-
-    orders[params.orderNumber] = {
-      parking_space: params.parkingSpace,
-      created_at: (new Date()).getTime()
-    }
+    // orders[params.orderNumber] = {
+    //   parking_space: params.parkingSpace,
+    //   created_at: (new Date()).getTime()
+    // }
     console.log("CUSTOMER ARRIVED:", orders)
-    await state.put(`curbside-pickup`, orders, { ttl: 10 });
-    logger.debug('Orders: ' + JSON.stringify(orderData))
+    if (orders[params.orderNumber]) {
+      orders[params.orderNumber].parkingSpace = params.parkingSpace
+    } else {
+      orders[params.orderNumber] = {}
+      orders[params.orderNumber].parkingSpace = params.parkingSpace
+    }
+    
+
+    await state.put(`curbside-pickup`, orders, { ttl: 30 });
+    // logger.debug('Orders: ' + JSON.stringify(orderData))
 
     return {
       statusCode: 200,

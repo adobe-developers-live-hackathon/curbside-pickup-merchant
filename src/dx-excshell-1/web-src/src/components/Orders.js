@@ -32,6 +32,8 @@ const Orders = () => {
               orderList.length ? (
                 <Flex gap="size-50" direction="column">
                   {orderList.map(order => {
+                    const id = Object.keys(order)[0]
+                    order = order[id]
                     return (
                       <div key={order.entity_id}>
                         <Grid
@@ -41,17 +43,17 @@ const Orders = () => {
                                     "items       image", 
                                     "parking     image",
                                     "complete    image"]}
-                          columns={["2fr", "2fr"]}
+                          columns={["2fr", "1fr"]}
                           rows={["size-500", "size-500", "size-500", "size-500", "size-500","size-500"]}
                         >
-                          <View gridArea="image" alignSelf="center"><Image src={order.productImage} alt="product image"/></View>
+                          <View gridArea="image" alignSelf="center" marginEnd="10px"><Image src={order.productImage} alt="product image"/></View>
                           <View gridArea="orderNumber"><h3>Order #{order.entity_id}</h3></View>
                           <View gridArea="name"><h4>{order.customer_firstname} {order.customer_lastname}</h4></View>
                           <View gridArea="items"><Text slot="description">Items: {order.items.map(e => e.name).join(", ")}</Text></View>
                           <View gridArea="parking">
-                              {order.parking_space === "Waiting for pickup" 
-                              ? <StatusLight variant="negative"><i>{order.parking_space}</i></StatusLight>
-                              : <StatusLight variant="negative"><i>Parking space #{order.parking_space}</i></StatusLight>
+                              {order.parkingSpace === "Waiting for pickup" 
+                              ? <StatusLight variant="negative"><i>{order.parkingSpace}</i></StatusLight>
+                              : <StatusLight variant="negative"><i>Parking space #{order.parkingSpace}</i></StatusLight>
                               }
                           </View>
                           <View gridArea="complete">
