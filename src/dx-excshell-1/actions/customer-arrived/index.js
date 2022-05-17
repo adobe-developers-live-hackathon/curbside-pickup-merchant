@@ -44,9 +44,9 @@ async function main(params) {
     logger.debug('Order data: ' + stringParameters(orderData))
 
     // check customer email
-    if (params.customerEmail !== orderData.customer_email) {
-      return errorResponse(400, 'This Email does not match the one the order was placed with', logger)
-    }
+    // if (params.customerEmail !== orderData.customer_email) {
+    //   return errorResponse(400, 'This Email does not match the one the order was placed with', logger)
+    // }
 
     // Save data in state
     const state = await stateLib.init()

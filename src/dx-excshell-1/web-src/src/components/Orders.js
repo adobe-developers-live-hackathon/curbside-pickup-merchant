@@ -46,7 +46,7 @@ const Orders = () => {
                           columns={["2fr", "1fr"]}
                           rows={["size-500", "size-500", "size-500", "size-500", "size-500","size-500"]}
                         >
-                          <View gridArea="image" alignSelf="center" marginEnd="10px"><Image src={order.productImage} alt="product image"/></View>
+                          <View gridArea="image" alignSelf="center" maxWidth="145px" marginEnd="10px"><Image src={order.productImage} alt="product image"/></View>
                           <View gridArea="orderNumber"><h3>Order #{order.entity_id}</h3></View>
                           <View gridArea="name"><h4>{order.customer_firstname} {order.customer_lastname}</h4></View>
                           <View gridArea="items"><Text slot="description">Items: {order.items.map(e => e.name).join(", ")}</Text></View>

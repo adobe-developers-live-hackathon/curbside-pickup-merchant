@@ -7,8 +7,6 @@ const { Core } = require('@adobe/aio-sdk')
 const { errorResponse, stringParameters } = require('../utils')
 const stateLib = require('@adobe/aio-lib-state');
 const qs = require('qs')
-const ADOBE_COMMERCE_PRODUCTS_REST_ENDPOINT='https://admin:fafgbxywgtx5w@pmayer-dev-sjvtvai-fafgbxywgtx5w.demo.magentosite.cloud/rest/V1/products'
-const IMAGE_ADDRESS_PREFIX = 'https://pmayer-dev-sjvtvai-fafgbxywgtx5w.demo.magentosite.cloud/media/catalog/product'
 
 // main function that will be executed by Adobe I/O Runtime
 async function main (params) {
@@ -54,18 +52,18 @@ async function main (params) {
     // Load orders data from state lib
     const state = await stateLib.init()
     const ordersData = await state.get('curbside-pickup')
-    console.log("FROM STATE:", ordersData)
-    // console.log("FROM STOCK:", orders)
+    
+    // Great explanation of Promis.all here: https://advancedweb.hu/how-to-use-async-functions-with-array-map-in-javascript
     orders = await Promise.all(orders.items.map( async (obj) => {
       const productImage = await getProductImage(obj.items, params)
-      const entity_id = obj.entity_id
-      let parkingSpace;
-      if (ordersData && ordersData.value && ordersData.value[obj.entity_id]) parkingSpace = ordersData.value[obj.entity_id].parkingSpace;
 
-      // if (obj) return {entity_id: { ...obj, productImage, parking_space: ordersData && ordersData.value ?  ordersData.value[obj.entity_id].parking_space : "Waiting for pickup"}}
-      if (obj) return {[entity_id]: { ...obj, productImage, parkingSpace: parkingSpace || "Waiting for pickup"}}
+      const entityId = obj.entity_id
+      let parkingSpace;
+      if (ordersData?.value && ordersData.value[entityId]) parkingSpace = ordersData.value[entityId].parkingSpace;
+
+      if (obj) return {[entityId]: { ...obj, productImage, parkingSpace: parkingSpace || "Waiting for pickup"}}
     }))
-    console.log("POST MAP:", orders)
+
     await state.put('curbside-pickup', orders, { ttl: 30 });
    
     return {
@@ -85,8 +83,7 @@ async function main (params) {
 async function getProductImage(order, params) {
   let sku;
   for (let items in order) sku = order[items].sku
-
-  const mediaEndpoint = `${ADOBE_COMMERCE_PRODUCTS_REST_ENDPOINT}/${sku}/media`
+  const mediaEndpoint = `${params.ADOBE_COMMERCE_PRODUCTS_REST_ENDPOINT}/${sku}/media`
   const getMediaDataRes = await fetch(mediaEndpoint, {
     method: 'GET',
     headers: {
@@ -103,7 +100,7 @@ async function getProductImage(order, params) {
   let file
   for (let items in response) file = response[items].file
 
-  return `${IMAGE_ADDRESS_PREFIX}${file}`
+  return `${params.IMAGE_ADDRESS_PREFIX}${file}`
 }
 
 exports.main = main
