@@ -32,8 +32,11 @@ async function main (params) {
         ]
       }
     }
+
     const queryString = qs.stringify(queryStringParameters)   
     const ordersEndpoint = `${params.ADOBE_COMMERCE_ORDERS_REST_ENDPOINT}?${queryString}`
+
+    // Get all orders from Adobe Commerce that have yet to be picked up
     const getOrderDataRes = await fetch(ordersEndpoint, {
       method: 'GET',
       headers: {
@@ -47,24 +50,23 @@ async function main (params) {
     }
 
     let orders = await getOrderDataRes.json()
-    // console.log("GET ORDERS:", orders)
 
     // Load orders data from state lib
     const state = await stateLib.init()
     const ordersData = await state.get('curbside-pickup')
     
-    // Great explanation of Promis.all here: https://advancedweb.hu/how-to-use-async-functions-with-array-map-in-javascript
+    // Great explanation of Promise.all here: https://advancedweb.hu/how-to-use-async-functions-with-array-map-in-javascript
     orders = await Promise.all(orders.items.map( async (obj) => {
-      const productImage = await getProductImage(obj.items, params)
+      const productImage = await getProductImageUrl(obj.items, params)
 
       const entityId = obj.entity_id
-      let parkingSpace;
-      if (ordersData?.value && ordersData.value[entityId]) parkingSpace = ordersData.value[entityId].parkingSpace;
+      let parkingSpace = "Waiting for pickup"
+      if (ordersData?.value && ordersData.value[entityId]) parkingSpace = ordersData.value[entityId].parkingSpace
 
-      if (obj) return {[entityId]: { ...obj, productImage, parkingSpace: parkingSpace || "Waiting for pickup"}}
+      if (obj) return {[entityId]: { ...obj, productImage, parkingSpace }}
     }))
 
-    await state.put('curbside-pickup', orders, { ttl: 30 });
+    await state.put('curbside-pickup', orders, { ttl: 30 })
    
     return {
       statusCode: 200,
@@ -80,7 +82,9 @@ async function main (params) {
   }
 }
 
-async function getProductImage(order, params) {
+// Function to get a product's image URL by extracting its SKU, 
+// which is then used to get the file path from Commerce
+async function getProductImageUrl(order, params) {
   let sku;
   for (let items in order) sku = order[items].sku
   const mediaEndpoint = `${params.ADOBE_COMMERCE_PRODUCTS_REST_ENDPOINT}/${sku}/media`
@@ -96,7 +100,7 @@ async function getProductImage(order, params) {
     throw new Error('request failed with status code ' + getMediaDataRes.status)
   }
 
-  const response = await getMediaDataRes.json();
+  const response = await getMediaDataRes.json()
   let file
   for (let items in response) file = response[items].file
 

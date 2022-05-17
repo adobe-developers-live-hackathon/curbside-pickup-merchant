@@ -34,6 +34,10 @@ local serverless stack and also run your actions locally use the `aio app run --
 ## please provide your Adobe I/O Runtime credentials
 # AIO_RUNTIME_AUTH=
 # AIO_RUNTIME_NAMESPACE=
+# ADOBE_COMMERCE_ORDERS_REST_ENDPOINT= (for example, https://pmayer-dev-sjvtvai-fafgbxywgtx5w.demo.magentosite.cloud/rest/V1/orders)
+# ADOBE_COMMERCE_PRODUCTS_REST_ENDPOINT= (for example, https://pmayer-dev-sjvtvai-fafgbxywgtx5w.demo.magentosite.cloud/rest/V1/products)
+# IMAGE_ADDRESS_PREFIX= (for example, https://pmayer-dev-sjvtvai-fafgbxywgtx5w.demo.magentosite.cloud/media/catalog/product)
+# ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN= (found in System-->Integrations-->Add new integration-->Save new integration-->Integration Details-->Access Token)
 ```
 
 ### `manifest.yml`
