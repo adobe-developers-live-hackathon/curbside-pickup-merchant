@@ -17,47 +17,26 @@ async function main (params) {
     // 'info' is the default level if not set
     logger.info('Calling the get-orders action')
 
-    // log parameters, only if params.LOG_LEVEL === 'debug'
-    logger.debug(stringParameters(params))
-
-    // Load orders data from state lib
-    const state = await stateLib.init()
-    const ordersData = await state.get('curbside-pickup')
-    logger.debug(`Orders from storage: ${JSON.stringify(ordersData)}`)
-    if (!ordersData || !ordersData.value || ordersData.value.length === 0) {
-      return {
-        statusCode: 200,
-        body: {
-          orders: []
-        }
-      }
-    }
-
-    // Make call to Adobe Commerce
-
-    // Build query string
     const queryStringParameters = {
       "searchCriteria": {
         "filter_groups": [
           {
             "filters": [
               {
-                "field": "entity_id",
-                "value": Object.keys(ordersData.value).join(','),
-                "condition_type": "in"
+                "field": "status",
+                "value": "pending",
+                "condition_type": "eq"
               }
             ]
           }
         ]
       }
     }
-    const queryString = qs.stringify(queryStringParameters)
-    logger.debug(`Query string: ${queryString}`)
-    // Result should be:
-    // searchCriteria[filterGroups][0][filters][0][field]=entity_id&searchCriteria[filterGroups][0][filters][0][value]=3,5&searchCriteria[filterGroups][0][filters][0][conditionType]=in
 
+    const queryString = qs.stringify(queryStringParameters)   
     const ordersEndpoint = `${params.ADOBE_COMMERCE_ORDERS_REST_ENDPOINT}?${queryString}`
-    logger.debug(`ordersEndpoint: ${ordersEndpoint}`)
+
+    // Get all orders from Adobe Commerce that have yet to be picked up
     const getOrderDataRes = await fetch(ordersEndpoint, {
       method: 'GET',
       headers: {
@@ -65,13 +44,30 @@ async function main (params) {
         'Authorization': 'Bearer ' + params.ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN
       }
     })
+
     if (!getOrderDataRes.ok) {
       throw new Error('request to ' + ordersEndpoint + ' failed with status code ' + getOrderDataRes.status)
     }
+
     let orders = await getOrderDataRes.json()
-    logger.debug(`Orders: ${JSON.stringify(orders)}`)
-    orders = orders.items.map(obj=> ({ ...obj, parking_space: ordersData.value[obj.entity_id].parking_space }))
-    logger.debug(`Orders: ${JSON.stringify(orders)}`)
+
+    // Load orders data from state lib
+    const state = await stateLib.init()
+    const ordersData = await state.get('curbside-pickup')
+    
+    // Great explanation of Promise.all here: https://advancedweb.hu/how-to-use-async-functions-with-array-map-in-javascript
+    orders = await Promise.all(orders.items.map( async (obj) => {
+      const productImage = await getProductImageUrl(obj.items, params)
+
+      const entityId = obj.entity_id
+      let parkingSpace = "Waiting for pickup"
+      if (ordersData?.value && ordersData.value[entityId]) parkingSpace = ordersData.value[entityId].parkingSpace
+
+      if (obj) return {[entityId]: { ...obj, productImage, parkingSpace }}
+    }))
+
+    await state.put('curbside-pickup', orders, { ttl: 30 })
+   
     return {
       statusCode: 200,
       body: {
@@ -84,6 +80,31 @@ async function main (params) {
     // return with 500
     return errorResponse(500, 'server error', logger)
   }
+}
+
+// Function to get a product's image URL by extracting its SKU, 
+// which is then used to get the file path from Commerce
+async function getProductImageUrl(order, params) {
+  let sku;
+  for (let items in order) sku = order[items].sku
+  const mediaEndpoint = `${params.ADOBE_COMMERCE_PRODUCTS_REST_ENDPOINT}/${sku}/media`
+  const getMediaDataRes = await fetch(mediaEndpoint, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + params.ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN
+    }
+  })
+ 
+  if (!getMediaDataRes.ok) {
+    throw new Error('request failed with status code ' + getMediaDataRes.status)
+  }
+
+  const response = await getMediaDataRes.json()
+  let file
+  for (let items in response) file = response[items].file
+
+  return `${params.IMAGE_ADDRESS_PREFIX}${file}`
 }
 
 exports.main = main

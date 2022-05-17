@@ -44,25 +44,33 @@ async function main(params) {
     logger.debug('Order data: ' + stringParameters(orderData))
 
     // check customer email
-    if (params.customerEmail !== orderData.customer_email) {
-      return errorResponse(400, 'This Email does not match the one the order was placed with', logger)
-    }
+    // if (params.customerEmail !== orderData.customer_email) {
+    //   return errorResponse(400, 'This Email does not match the one the order was placed with', logger)
+    // }
 
     // Save data in state
     const state = await stateLib.init()
     let orders = await state.get(`curbside-pickup`);
     if (orders?.value) {
-      orders = orders.value;
+      orders = orders.value[0];
     } else {
       orders = {};
     }
-
-    orders[params.orderNumber] = {
-      parking_space: params.parkingSpace,
-      created_at: (new Date()).getTime()
+    // orders[params.orderNumber] = {
+    //   parking_space: params.parkingSpace,
+    //   created_at: (new Date()).getTime()
+    // }
+    console.log("CUSTOMER ARRIVED:", orders)
+    if (orders[params.orderNumber]) {
+      orders[params.orderNumber].parkingSpace = params.parkingSpace
+    } else {
+      orders[params.orderNumber] = {}
+      orders[params.orderNumber].parkingSpace = params.parkingSpace
     }
-    await state.put(`curbside-pickup`, orders, { ttl: -1 });
-    logger.debug('Orders: ' + JSON.stringify(orderData))
+    
+
+    await state.put(`curbside-pickup`, orders, { ttl: 30 });
+    // logger.debug('Orders: ' + JSON.stringify(orderData))
 
     return {
       statusCode: 200,
