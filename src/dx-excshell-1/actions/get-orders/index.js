@@ -15,7 +15,7 @@ async function main (params) {
 
   try {
     // 'info' is the default level if not set
-    logger.info('Calling the get-orders action')
+    // logger.info('GETTING ORDERS FROM COMMERCE')
 
     const queryStringParameters = {
       "searchCriteria": {
@@ -42,6 +42,7 @@ async function main (params) {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer ' + params.ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN
+        // 'Authorization': 'Bearer ' + '1oyklt3hhttdykwv7bb50py66rri504z'
       }
     })
 
@@ -55,23 +56,42 @@ async function main (params) {
     const state = await stateLib.init()
     const ordersData = await state.get('curbside-pickup')
     
-    // Great explanation of Promise.all here: https://advancedweb.hu/how-to-use-async-functions-with-array-map-in-javascript
-    orders = await Promise.all(orders.items.map( async (obj) => {
-      const productImage = await getProductImageUrl(obj.items, params)
-
-      const entityId = obj.entity_id
+    const orderObj = {}
+    
+    for (const order of orders.items) {
+      const entityId = order.entity_id
+      const productImage = await getProductImageUrl(order.items, params)
       let parkingSpace = "Waiting for pickup"
       if (ordersData?.value && ordersData.value[entityId]) parkingSpace = ordersData.value[entityId].parkingSpace
+      orderObj[entityId] = {...order, productImage, parkingSpace}
+    }
+    // console.log("OBJECT OF DESIRE:", orderObj)
 
-      if (obj) return {[entityId]: { ...obj, productImage, parkingSpace }}
-    }))
+    // Great explanation of Promise.all here: https://advancedweb.hu/how-to-use-async-functions-with-array-map-in-javascript
+    // orders = await Promise.all(orders.items.map( async (obj) => {
+    //   const productImage = await getProductImageUrl(obj.items, params)
 
-    await state.put('curbside-pickup', orders, { ttl: 30 })
-   
+    //   const entityId = obj.entity_id
+    //   let parkingSpace = "Waiting for pickup"
+    //   if (ordersData?.value && ordersData.value[entityId]) parkingSpace = ordersData.value[entityId].parkingSpace
+
+    //   if (obj) return { [entityId]: { ...obj, productImage, parkingSpace } }
+    // }))
+
+
+    // await state.put('curbside-pickup', orders, { ttl: 30 })
+    // return {
+    //   statusCode: 200,
+    //   body: {
+    //     orders: orders
+    //   }
+    // }
+
+    await state.put('curbside-pickup', orderObj, { ttl: 20 })
     return {
       statusCode: 200,
       body: {
-        orders: orders
+        orders: orderObj
       }
     }
   } catch (error) {
@@ -92,7 +112,7 @@ async function getProductImageUrl(order, params) {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + params.ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN
+      // 'Authorization': 'Bearer ' + params.ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN
     }
   })
  

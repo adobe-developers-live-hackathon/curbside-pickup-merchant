@@ -44,11 +44,12 @@ const Orders = () => {
                 <ProgressCircle size="L" aria-label="Loading…" isIndeterminate />
               </Flex>
             ) : (
-              Object.keys(orderList).length? (
-              
+            //   Object.keys(orderList).length? (
+              orderList.length ? (
                 <Flex gap="size-50" direction="column">
-                  {Object.keys(orderList).map(orderId => {
-                    order = orderList[orderId]
+                  {orderList.map(order => {
+                    const id = Object.keys(order)[0]
+                    order = order[id]
                     return (
                       <div key={order.entity_id}>
                         <Grid

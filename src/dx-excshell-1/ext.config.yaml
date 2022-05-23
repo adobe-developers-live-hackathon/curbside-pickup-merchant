@@ -44,3 +44,12 @@ runtimeManifest:
           annotations:
             require-adobe-auth: false
             final: true
+        get-orders-from-state:
+          function: actions/get-orders-from-state/index.js
+          web: 'yes'
+          runtime: 'nodejs:14'
+          inputs:
+            LOG_LEVEL: $LOG_LEVEL
+          annotations:
+            require-adobe-auth: false
+            final: true

@@ -24,24 +24,24 @@ async function main(params) {
     }
 
     // get order data from Adobe Commerce
-    const getOrderDataEndpoint = `${params.ADOBE_COMMERCE_ORDERS_REST_ENDPOINT}/${params.orderNumber}`
-    logger.debug(`getOrderDataEndpoint: ${getOrderDataEndpoint}`)
-    const getOrderDataRes = await fetch(getOrderDataEndpoint, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + params.ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN
-      }
-    })
-    if (!getOrderDataRes.ok) {
-      // checking the existence of an order
-      if (getOrderDataRes.status === 404) {
-        return errorResponse(400, 'Order not found', logger)
-      }
-      throw new Error('request to ' + getOrderDataEndpoint + ' failed with status code ' + getOrderDataRes.status)
-    }
-    const orderData = await getOrderDataRes.json()
-    logger.debug('Order data: ' + stringParameters(orderData))
+    // const getOrderDataEndpoint = `${params.ADOBE_COMMERCE_ORDERS_REST_ENDPOINT}/${params.orderNumber}`
+    // logger.debug(`getOrderDataEndpoint: ${getOrderDataEndpoint}`)
+    // const getOrderDataRes = await fetch(getOrderDataEndpoint, {
+    //   method: 'GET',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //     'Authorization': 'Bearer ' + params.ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN
+    //   }
+    // })
+    // if (!getOrderDataRes.ok) {
+    //   // checking the existence of an order
+    //   if (getOrderDataRes.status === 404) {
+    //     return errorResponse(400, 'Order not found', logger)
+    //   }
+    //   throw new Error('request to ' + getOrderDataEndpoint + ' failed with status code ' + getOrderDataRes.status)
+    // }
+    // const orderData = await getOrderDataRes.json()
+    // logger.debug('Order data: ' + stringParameters(orderData))
 
     // check customer email
     // if (params.customerEmail !== orderData.customer_email) {
@@ -51,8 +51,9 @@ async function main(params) {
     // Save data in state
     const state = await stateLib.init()
     let orders = await state.get(`curbside-pickup`);
+    console.log("Plain orders:", orders)
     if (orders?.value) {
-      orders = orders.value[0];
+      orders = orders.value;
     } else {
       orders = {};
     }
@@ -60,7 +61,7 @@ async function main(params) {
     //   parking_space: params.parkingSpace,
     //   created_at: (new Date()).getTime()
     // }
-    console.log("CUSTOMER ARRIVED:", orders)
+    // console.log("CUSTOMER ARRIVED:", orders)
     if (orders[params.orderNumber]) {
       orders[params.orderNumber].parkingSpace = params.parkingSpace
     } else {
@@ -68,8 +69,8 @@ async function main(params) {
       orders[params.orderNumber].parkingSpace = params.parkingSpace
     }
     
-
-    await state.put(`curbside-pickup`, orders, { ttl: 30 });
+    console.log("WITH PARKING:", orders)
+    await state.put(`curbside-pickup`, orders, { ttl: 20 });
     // logger.debug('Orders: ' + JSON.stringify(orderData))
 
     return {
