@@ -13,14 +13,11 @@ async function main (params) {
   const logger = Core.Logger('main', { level: params.LOG_LEVEL || 'info' })
 
   try {
-    // 'info' is the default level if not set
-    logger.info('GETTING ORDERS FROM STATE')
-
     // Load orders data from state lib
     const state = await stateLib.init()
     const ordersData = await state.get('curbside-pickup')
-    console.log("ORDERSDATA:", ordersData)
     const orders = ordersData.value
+    
     return {
       statusCode: 200,
       body: {

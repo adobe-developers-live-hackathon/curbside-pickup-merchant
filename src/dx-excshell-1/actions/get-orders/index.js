@@ -55,7 +55,7 @@ async function main (params) {
     // Load orders data from state lib
     const state = await stateLib.init()
     const ordersData = await state.get('curbside-pickup')
-    
+    console.log("STATE:", ordersData)
     const orderObj = {}
     
     for (const order of orders.items) {
@@ -65,7 +65,6 @@ async function main (params) {
       if (ordersData?.value && ordersData.value[entityId]) parkingSpace = ordersData.value[entityId].parkingSpace
       orderObj[entityId] = {...order, productImage, parkingSpace}
     }
-    // console.log("OBJECT OF DESIRE:", orderObj)
 
     // Great explanation of Promise.all here: https://advancedweb.hu/how-to-use-async-functions-with-array-map-in-javascript
     // orders = await Promise.all(orders.items.map( async (obj) => {
@@ -78,16 +77,7 @@ async function main (params) {
     //   if (obj) return { [entityId]: { ...obj, productImage, parkingSpace } }
     // }))
 
-
-    // await state.put('curbside-pickup', orders, { ttl: 30 })
-    // return {
-    //   statusCode: 200,
-    //   body: {
-    //     orders: orders
-    //   }
-    // }
-
-    await state.put('curbside-pickup', orderObj, { ttl: 20 })
+    await state.put('curbside-pickup', orderObj, { ttl: 200 })
     return {
       statusCode: 200,
       body: {

@@ -48,7 +48,7 @@ const Orders = () => {
               
                 <Flex gap="size-50" direction="column">
                   {Object.keys(orderList).map(orderId => {
-                    order = orderList[orderId]
+                    const order = orderList[orderId]
                     return (
                       <div key={order.entity_id}>
                         <Grid
@@ -148,7 +148,7 @@ const Orders = () => {
                 setIsLoading(false);
             }
         } else {
-            const orderList = await getOrdersFromCommerceBackend();
+            const orderList = await getOrdersFromState();
             console.log(orderList)
             if (orderList) {
                 setOrderList(orderList);
@@ -160,7 +160,6 @@ const Orders = () => {
     async function getOrdersFromCommerceBackend () {
       try {
         const orders = await actionWebInvoke(actions['get-orders'])
-        console.log(`Response from get-orders action:`, orders)
         return orders.orders ? orders.orders : []
       } catch (e) {
         console.error(e)

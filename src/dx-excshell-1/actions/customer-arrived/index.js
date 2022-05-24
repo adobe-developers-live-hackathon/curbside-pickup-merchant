@@ -57,11 +57,7 @@ async function main(params) {
     } else {
       orders = {};
     }
-    // orders[params.orderNumber] = {
-    //   parking_space: params.parkingSpace,
-    //   created_at: (new Date()).getTime()
-    // }
-    // console.log("CUSTOMER ARRIVED:", orders)
+    
     if (orders[params.orderNumber]) {
       orders[params.orderNumber].parkingSpace = params.parkingSpace
     } else {
@@ -69,9 +65,7 @@ async function main(params) {
       orders[params.orderNumber].parkingSpace = params.parkingSpace
     }
     
-    console.log("WITH PARKING:", orders)
-    await state.put(`curbside-pickup`, orders, { ttl: 20 });
-    // logger.debug('Orders: ' + JSON.stringify(orderData))
+    await state.put(`curbside-pickup`, orders, { ttl: 200 });
 
     return {
       statusCode: 200,
