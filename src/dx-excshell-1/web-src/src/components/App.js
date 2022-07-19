@@ -2,11 +2,13 @@
 * <license header>
 */
 
-import React, { useState, useEffect } from 'react';
-import {Provider, defaultTheme, Heading, Button, Text, Grid, View, Divider, Flex, StatusLight, ProgressCircle} from '@adobe/react-spectrum'
+import React from 'react';
+import {Provider, defaultTheme, Grid, View} from '@adobe/react-spectrum'
 import ErrorBoundary from 'react-error-boundary'
-import {HashRouter as Router} from 'react-router-dom'
+import { HashRouter as Router, Switch, Route } from 'react-router-dom'
 import Orders from './Orders';
+import Sidebar from './Sidebar';
+
 
 function App(props) {
   console.log('runtime object:', props.runtime)
@@ -27,12 +29,29 @@ function App(props) {
       <Router>
         <Provider theme={defaultTheme}
                   colorScheme="light"
-                  width={{base: 'auto', L: 'size-6000'}}
-                  margin={'40px auto'}
+                  // width={{base: 'auto', L: 'size-6000'}}
+                  // margin={'40px auto'}
                   UNSAFE_className={'list-box-wrapper'}
         >
-          <Orders/>
-        </Provider>
+          <Grid
+            areas={['sidebar content']}
+            columns={['256px', '500px']}
+            rows={['auto']}
+            height='100vh'
+            gap='size-100'
+          >
+            <View
+              gridArea='sidebar'
+              backgroundColor='gray-200'
+              padding='size-300'
+            >
+              <Sidebar></Sidebar>
+            </View>
+            <View gridArea='content'paddingLeft='size-400' paddingTop='size-100'>        
+                  <Orders></Orders>
+            </View>
+           </Grid>
+        </Provider> 
       </Router>
     </ErrorBoundary>
   )

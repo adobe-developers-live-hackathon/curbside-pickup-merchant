@@ -14,9 +14,6 @@ async function main (params) {
   const logger = Core.Logger('main', { level: params.LOG_LEVEL || 'info' })
 
   try {
-    // 'info' is the default level if not set
-    // logger.info('GETTING ORDERS FROM COMMERCE')
-
     const queryStringParameters = {
       "searchCriteria": {
         "filter_groups": [
@@ -55,7 +52,6 @@ async function main (params) {
     // Load orders data from state lib
     const state = await stateLib.init()
     const ordersData = await state.get('curbside-pickup')
-    console.log("STATE:", ordersData)
     const orderObj = {}
     
     for (const order of orders.items) {
@@ -102,7 +98,6 @@ async function getProductImageUrl(order, params) {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      // 'Authorization': 'Bearer ' + params.ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN
     }
   })
  

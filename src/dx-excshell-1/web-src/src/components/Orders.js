@@ -1,24 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {Heading, Button, Text, Grid, View, Divider, Flex, StatusLight, ProgressCircle, Image} from '@adobe/react-spectrum'
+import { useSearchParams } from 'react-router-dom'
+import { Heading, Button, Text, Grid, View, Divider, Flex, StatusLight, ProgressCircle, Image } from '@adobe/react-spectrum'
 import ErrorBoundary from 'react-error-boundary'
 import actionWebInvoke from "../utils";
 import actions from "../config.json";
 
-const Orders = () => {
+const Orders = (props) => {
     const [isLoading, setIsLoading] = useState(true);
     const [orderList, setOrderList] = useState([]);
     const [completingOrderId, setCompletingOrderId] = useState(undefined);
     const isInitialMount = useRef(true);
-
- 
-    // useEffect(() => {
-    //   const interval = setInterval(() => {
-    //     (async () => await refreshOrders())();
-    //   }, 5000)
-  
-    //   return () => clearInterval(interval)
-    // }, []);
-
+    const [searchParams] = useSearchParams();
+    const pw = searchParams.get("pw")
+    console.log(pw)
     useEffect(() => {
         if (isInitialMount.current) {
             (async () => await refreshOrders(isInitialMount.current))();
@@ -31,10 +25,6 @@ const Orders = () => {
               return () => clearInterval(interval)
         }
     })
-
-    // useEffect(() => {
-    //     (async () => await refreshOrders())();
-    // }, [])
   
     return (
       <ErrorBoundary onError={onError} FallbackComponent={fallbackComponent}>
