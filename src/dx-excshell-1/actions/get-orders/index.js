@@ -12,6 +12,21 @@ const qs = require('qs')
 async function main (params) {
   // create a Logger
   const logger = Core.Logger('main', { level: params.LOG_LEVEL || 'info' })
+  console.log("ORDER ACTION:", params.url)
+
+  const data = {"username": params.user, "password": params.pw}
+
+  // Get integration token from Adobe Commerce.
+  const accessTokenRes = await fetch(params.url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data)
+  })
+
+  const token = await accessTokenRes.json();
+  console.log("ACCESS TOKEN:", token)
 
   try {
     const queryStringParameters = {
@@ -38,8 +53,7 @@ async function main (params) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + params.ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN
-        // 'Authorization': 'Bearer ' + '1oyklt3hhttdykwv7bb50py66rri504z'
+        'Authorization': 'Bearer ' + token
       }
     })
 
@@ -73,7 +87,7 @@ async function main (params) {
     //   if (obj) return { [entityId]: { ...obj, productImage, parkingSpace } }
     // }))
 
-    await state.put('curbside-pickup', orderObj, { ttl: 200 })
+    await state.put('curbside-pickup', orderObj)
     return {
       statusCode: 200,
       body: {

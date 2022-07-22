@@ -19,19 +19,19 @@ function Sidebar () {
         <Image width="200px" marginBottom="27px" src="https://textilesinside.com/wp-content/uploads/2021/05/Logo_brueckner_20191106.png"/>
       </li>
       {/* <li className="SideNav-item">
-        <NavLink className="SideNav-itemLink" activeClassName="is-selected" aria-current="page" exact to="/">Home</NavLink>
+        <NavLink className="SideNav-itemLink" aria-current="page" exact to="/">Home</NavLink>
       </li> */}
       <li className="SideNav-item">
         <Flex>
           <Home marginTop="7px" marginLeft="7px" aria-label="S" size="S"/>
-          <NavLink className="SideNav-itemLink" activeClassName="is-selected" aria-current="page" to="/">Home</NavLink>
+          <NavLink className="SideNav-itemLink" aria-current="page" to="/">Home</NavLink>
         </Flex>
       </li>
       <li className="SideNav-item">
        <View backgroundColor="gray-300" paddingRight="7px" paddingLeft="5px" borderRadius="6px">
         <Flex>
           <ShoppingCart marginTop="7px" marginLeft="7px" aria-label="S" size="S"/>
-          <NavLink className="SideNav-itemLink" activeClassName="is-selected" aria-current="page" to="/">Orders</NavLink>
+          <NavLink className="SideNav-itemLink" aria-current="page" to="/">Orders</NavLink>
             <Text marginTop="4px">2</Text>
         </Flex> 
        </View> 
@@ -40,26 +40,26 @@ function Sidebar () {
       <li className="SideNav-item">
         <Flex>
           <Box marginTop="7px" marginLeft="7px" aria-label="S" size="S"/>
-          <NavLink className="SideNav-itemLink" activeClassName="is-selected" aria-current="page" to="/">Products</NavLink>
+          <NavLink className="SideNav-itemLink" aria-current="page" to="/">Products</NavLink>
         </Flex>
       </li>
       <li className="SideNav-item">
         <Flex>
           <PeopleGroup marginTop="7px" marginLeft="7px" aria-label="S" size="S"/>
-          <NavLink className="SideNav-itemLink" activeClassName="is-selected" aria-current="page" to="/">Customers</NavLink>
+          <NavLink className="SideNav-itemLink" aria-current="page" to="/">Customers</NavLink>
         </Flex>
       </li>
       <Divider size="M"/>
       <li className="SideNav-item">
         <Flex>
           <Report marginTop="7px" marginLeft="7px" aria-label="S" size="S"/>
-          <NavLink className="SideNav-itemLink" activeClassName="is-selected" aria-current="page" to="/">Reports</NavLink>
+          <NavLink className="SideNav-itemLink" aria-current="page" to="/">Reports</NavLink>
         </Flex>
       </li>
       <li className="SideNav-item">
         <Flex>
           <Shield marginTop="7px" marginLeft="7px" aria-label="S" size="S"/>
-          <NavLink className="SideNav-itemLink" activeClassName="is-selected" aria-current="page" to="/">Security</NavLink>
+          <NavLink className="SideNav-itemLink" aria-current="page" to="/">Security</NavLink>
         </Flex>
       </li>
     </ul>

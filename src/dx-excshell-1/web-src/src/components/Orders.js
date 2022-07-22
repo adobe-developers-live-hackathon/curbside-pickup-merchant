@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom'
-import { Heading, Button, Text, Grid, View, Divider, Flex, StatusLight, ProgressCircle, Image } from '@adobe/react-spectrum'
+import { Heading, Button, Text, Grid, View, Divider, Flex, StatusLight, ProgressCircle, Image, SearchField } from '@adobe/react-spectrum'
 import ErrorBoundary from 'react-error-boundary'
 import actionWebInvoke from "../utils";
 import actions from "../config.json";
@@ -10,17 +10,23 @@ const Orders = (props) => {
     const [orderList, setOrderList] = useState([]);
     const [completingOrderId, setCompletingOrderId] = useState(undefined);
     const isInitialMount = useRef(true);
+    
     const [searchParams] = useSearchParams();
-    const pw = searchParams.get("pw")
-    console.log(pw)
+    const commerceCreds = {};
+    commerceCreds.user = searchParams.get("user")
+    commerceCreds.pw = searchParams.get("pw")
+    commerceCreds.url = searchParams.get("url")
+    // commerceCreds.url = "ITS A URL"
+    
     useEffect(() => {
+      console.log(isInitialMount)
         if (isInitialMount.current) {
-            (async () => await refreshOrders(isInitialMount.current))();
+            (async () => await refreshOrders(isInitialMount.current, commerceCreds))();
             isInitialMount.current = false;
         } else {
             const interval = setInterval(() => {
                 (async () => await refreshOrders(isInitialMount.current))();
-              }, 5000)
+              }, 10000)
           
               return () => clearInterval(interval)
         }
@@ -29,6 +35,7 @@ const Orders = (props) => {
     return (
       <ErrorBoundary onError={onError} FallbackComponent={fallbackComponent}>
             <Heading level={1}> Orders ready for curbside pickup</Heading>
+            <SearchField defaultValue="search" width="460px" marginBottom="10px" marginTop="10px"/>
             {isLoading ? (
               <Flex alignItems="center" justifyContent="center" height="50vh">
                 <ProgressCircle size="L" aria-label="Loading…" isIndeterminate />
@@ -130,9 +137,11 @@ const Orders = (props) => {
       )
     }
   
-    async function refreshOrders (isInitialMount) {
+    async function refreshOrders (isInitialMount, commerceCreds) {
+        
         if (isInitialMount) {
-            const orderList = await getOrdersFromCommerceBackend();
+            const orderList = await getOrdersFromCommerceBackend(commerceCreds);
+            
             if (orderList) {
                 setOrderList(orderList);
                 setIsLoading(false);
@@ -147,9 +156,9 @@ const Orders = (props) => {
         }
     }
   
-    async function getOrdersFromCommerceBackend () {
+    async function getOrdersFromCommerceBackend (commerceCreds) {
       try {
-        const orders = await actionWebInvoke(actions['get-orders'])
+        const orders = await actionWebInvoke(actions['get-orders'], {}, commerceCreds)
         return orders.orders ? orders.orders : []
       } catch (e) {
         console.error(e)
@@ -158,6 +167,12 @@ const Orders = (props) => {
     }
 
     async function getOrdersFromState () {
+        // const headers = { 
+        //   'Access-Control-Allow-Origin':'*',
+        //   'Content-Type':'application/json',
+        //   'mode': 'no-cors'
+        // }
+
         try {
             const orders = await actionWebInvoke(actions['get-orders-from-state'])
             return orders.orders ? orders.orders : []
