@@ -12,23 +12,20 @@ const qs = require('qs')
 async function main (params) {
   // create a Logger
   const logger = Core.Logger('main', { level: params.LOG_LEVEL || 'info' })
-  console.log("ORDER ACTION:", params.url)
-
-  const data = {"username": params.user, "password": params.pw}
-
-  // Get integration token from Adobe Commerce.
-  const accessTokenRes = await fetch(params.url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data)
-  })
-
-  const token = await accessTokenRes.json();
-  console.log("ACCESS TOKEN:", token)
 
   try {
+    const data = {"username": params.user, "password": params.pw}
+
+    // Get integration token from Adobe Commerce.
+    const accessTokenRes = await fetch(`${params.url}/index.php/rest/V1/integration/admin/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    })
+    const token = await accessTokenRes.json();
+    
     const queryStringParameters = {
       "searchCriteria": {
         "filter_groups": [
@@ -46,7 +43,8 @@ async function main (params) {
     }
 
     const queryString = qs.stringify(queryStringParameters)   
-    const ordersEndpoint = `${params.ADOBE_COMMERCE_ORDERS_REST_ENDPOINT}?${queryString}`
+    const ordersEndpoint = `${params.url}/rest/V1/orders?${queryString}`
+    // const ordersEndpoint = `${params.ADOBE_COMMERCE_ORDERS_REST_ENDPOINT}?${queryString}`
 
     // Get all orders from Adobe Commerce that have yet to be picked up
     const getOrderDataRes = await fetch(ordersEndpoint, {
@@ -107,7 +105,7 @@ async function main (params) {
 async function getProductImageUrl(order, params) {
   let sku;
   for (let items in order) sku = order[items].sku
-  const mediaEndpoint = `${params.ADOBE_COMMERCE_PRODUCTS_REST_ENDPOINT}/${sku}/media`
+  const mediaEndpoint = `${params.url}/rest/V1/products/${sku}/media`
   const getMediaDataRes = await fetch(mediaEndpoint, {
     method: 'GET',
     headers: {
@@ -123,7 +121,7 @@ async function getProductImageUrl(order, params) {
   let file
   for (let items in response) file = response[items].file
 
-  return `${params.IMAGE_ADDRESS_PREFIX}${file}`
+  return `${params.url}/media/catalog/product${file}`
 }
 
 exports.main = main
