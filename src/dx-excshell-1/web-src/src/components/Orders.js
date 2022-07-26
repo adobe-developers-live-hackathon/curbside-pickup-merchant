@@ -16,16 +16,14 @@ const Orders = (props) => {
     commerceCreds.user = searchParams.get("user")
     commerceCreds.pw = searchParams.get("pw")
     commerceCreds.url = searchParams.get("url")
-    // commerceCreds.url = "ITS A URL"
     
     useEffect(() => {
-      console.log(isInitialMount)
         if (isInitialMount.current) {
-            (async () => await refreshOrders(isInitialMount.current, commerceCreds))();
+            (async () => await refreshOrders(commerceCreds))();
             isInitialMount.current = false;
         } else {
             const interval = setInterval(() => {
-                (async () => await refreshOrders(isInitialMount.current))();
+                (async () => await refreshOrders())();
               }, 10000)
           
               return () => clearInterval(interval)
@@ -33,7 +31,7 @@ const Orders = (props) => {
     })
   
     return (
-      <ErrorBoundary onError={onError} FallbackComponent={fallbackComponent}>
+      <ErrorBoundary FallbackComponent={fallbackComponent}>
             <Heading level={1}> Orders ready for curbside pickup</Heading>
             <SearchField defaultValue="search" width="460px" marginBottom="10px" marginTop="10px"/>
             {isLoading ? (
@@ -83,19 +81,6 @@ const Orders = (props) => {
                                 </Button>
                           </View>
                           <View gridArea="cta" alignSelf="center">
-                            {/* <Button
-                              variant="cta"
-                              onPress={async () => {
-                                setCompletingOrderId(order.entity_id)
-                                await closeOrder(order.entity_id);
-                                await refreshOrders()
-                                setCompletingOrderId(undefined)
-                              }}
-                              isDisabled={completingOrderId !== undefined}
-                            >
-                              Complete
-                            </Button> */}
-  
                             <ProgressCircle
                               aria-label="loading"
                               isIndeterminate
@@ -122,8 +107,8 @@ const Orders = (props) => {
     // Methods
   
     // error handler on UI rendering failure
-    function onError(e, componentStack) {
-    }
+    // function onError(e, componentStack) {
+    // }
   
     // component to show if UI fails rendering
     function fallbackComponent({componentStack, error}) {
@@ -137,49 +122,20 @@ const Orders = (props) => {
       )
     }
   
-    async function refreshOrders (isInitialMount, commerceCreds) {
-        
-        if (isInitialMount) {
-            const orderList = await getOrdersFromCommerceBackend(commerceCreds);
-            
-            if (orderList) {
-                setOrderList(orderList);
-                setIsLoading(false);
-            }
-        } else {
-            const orderList = await getOrdersFromState();
-            console.log(orderList)
-            if (orderList) {
-                setOrderList(orderList);
-                setIsLoading(false);
-            }
-        }
-    }
-  
-    async function getOrdersFromCommerceBackend (commerceCreds) {
+    async function refreshOrders (commerceCreds) {
+      let action;
+      commerceCreds ? action = 'get-orders' : action = 'get-orders-from-state'
+
       try {
-        const orders = await actionWebInvoke(actions['get-orders'], {}, commerceCreds)
-        return orders.orders ? orders.orders : []
+        const orders = await actionWebInvoke(actions[action], {}, commerceCreds)
+        if (orders.orders) {
+          setOrderList(orders.orders);
+          setIsLoading(false);
+        }
       } catch (e) {
         console.error(e)
         return []
       }
-    }
-
-    async function getOrdersFromState () {
-        // const headers = { 
-        //   'Access-Control-Allow-Origin':'*',
-        //   'Content-Type':'application/json',
-        //   'mode': 'no-cors'
-        // }
-
-        try {
-            const orders = await actionWebInvoke(actions['get-orders-from-state'])
-            return orders.orders ? orders.orders : []
-        } catch (e) {
-            console.error(e)
-            return []
-        }
     }
   
     async function closeOrder (orderId) {
