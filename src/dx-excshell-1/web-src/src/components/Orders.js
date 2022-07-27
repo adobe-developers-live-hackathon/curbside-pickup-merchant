@@ -141,8 +141,9 @@ const Orders = (props) => {
     async function closeOrder (orderId) {
       const params = {
         orderId: orderId,
+        ...commerceCreds
       }
-  
+      
       try {
         const actionResponse = await actionWebInvoke(actions['close-order'], {}, params)
         console.log(`Response from close-order action:`, actionResponse)

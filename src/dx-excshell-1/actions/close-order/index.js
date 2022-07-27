@@ -4,8 +4,13 @@
 
 const fetch = require('node-fetch')
 const { Core } = require('@adobe/aio-sdk')
-const { errorResponse, stringParameters, checkMissingRequestInputs } = require('../utils')
+const { errorResponse, stringParameters, checkMissingRequestInputs, getCommerceToken } = require('../utils')
 const stateLib = require('@adobe/aio-lib-state');
+
+// Fill out for faster local development. Otherwise the app will attempt to use the url passed from DSN.  
+const ADOBE_COMMERCE_DOMAIN = 'https://pmayer-dev-sjvtvai-fafgbxywgtx5w.demo.magentosite.cloud'
+
+const ORDERS_PATH = '/rest/V1/orders'
 
 // main function that will be executed by Adobe I/O Runtime
 async function main (params) {
@@ -28,13 +33,17 @@ async function main (params) {
       return errorResponse(400, errorMessage, logger)
     }
 
-    const ordersEndpoint = params.ADOBE_COMMERCE_ORDERS_REST_ENDPOINT
+    const ordersEndpoint = `${params.url || ADOBE_COMMERCE_DOMAIN}${ORDERS_PATH}`
     logger.debug('ordersEndpoint: ' + ordersEndpoint)
+    let token
+    params.url ? token = await getCommerceToken(params) 
+               : token = params.ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN // Fill out in .env file, if using
+
     const closeOrderRes = await fetch(ordersEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + params.ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN
+        'Authorization': 'Bearer ' + token
       },
       body: JSON.stringify({
         entity: {

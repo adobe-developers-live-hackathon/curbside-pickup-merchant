@@ -4,9 +4,16 @@
 
 const fetch = require('node-fetch')
 const { Core } = require('@adobe/aio-sdk')
-const { errorResponse, stringParameters } = require('../utils')
+const { errorResponse, getCommerceToken } = require('../utils')
 const stateLib = require('@adobe/aio-lib-state');
 const qs = require('qs')
+
+// Fill out for faster local development. Otherwise the app will attempt to use the url passed from DSN.  
+const ADOBE_COMMERCE_DOMAIN = 'https://pmayer-dev-sjvtvai-fafgbxywgtx5w.demo.magentosite.cloud'
+
+const ORDERS_PATH = '/rest/V1/orders'
+const PRODUCTS_PATH = '/rest/V1/products'
+const IMAGE_PATH = '/media/catalog/product'
 
 // main function that will be executed by Adobe I/O Runtime
 async function main (params) {
@@ -14,8 +21,11 @@ async function main (params) {
   const logger = Core.Logger('main', { level: params.LOG_LEVEL || 'info' })
 
   try {
-    const token = await getCommerceToken(params);
-    const openOrders = await getOrders(token, params);
+    let token
+    params.user ? token = await getCommerceToken(params) 
+                : token = params.ADOBE_COMMERCE_INTEGRATION_ACCESS_TOKEN // Fill out in .env file, if using
+
+    const openOrders = await getOrders(token, params)
     
     // Load orders data from state lib
     const state = await stateLib.init()
@@ -45,21 +55,21 @@ async function main (params) {
   }
 }
 
-async function getCommerceToken(params) {
-  const data = {"username": params.user, "password": params.pw}
+// async function getCommerceToken(params) {
+//   const data = {"username": params.user, "password": params.pw}
 
-  // Get integration token from Adobe Commerce.
-  const accessTokenRes = await fetch(`${params.url}/index.php/rest/V1/integration/admin/token`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data)
-  })
-  const token = await accessTokenRes.json()
+//   // Get integration token from Adobe Commerce.
+//   const accessTokenRes = await fetch(`${params.url}/index.php/rest/V1/integration/admin/token`, {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify(data)
+//   })
+//   const token = await accessTokenRes.json()
 
-  return token
-}
+//   return token
+// }
 
 async function getOrders(token, params) {
   const queryStringParameters = {
@@ -78,9 +88,8 @@ async function getOrders(token, params) {
     }
   }
 
-  const queryString = qs.stringify(queryStringParameters)   
-  const ordersEndpoint = `${params.url}/rest/V1/orders?${queryString}`
-
+  const queryString = qs.stringify(queryStringParameters) 
+  const ordersEndpoint = `${params.url || ADOBE_COMMERCE_DOMAIN}${ORDERS_PATH}?${queryString}`
   // Get all orders from Adobe Commerce that have yet to be picked up
   const getOrderDataRes = await fetch(ordersEndpoint, {
     method: 'GET',
@@ -104,7 +113,7 @@ async function getOrders(token, params) {
 async function getProductImageUrl(order, params) {
   let sku;
   for (let items in order) sku = order[items].sku
-  const mediaEndpoint = `${params.url}/rest/V1/products/${sku}/media`
+  const mediaEndpoint = `${params.url || ADOBE_COMMERCE_DOMAIN}${PRODUCTS_PATH}/${sku}/media`
   const getMediaDataRes = await fetch(mediaEndpoint, {
     method: 'GET',
     headers: {
@@ -120,7 +129,9 @@ async function getProductImageUrl(order, params) {
   let file
   for (let items in response) file = response[items].file
 
-  return `${params.url}/media/catalog/product${file}`
+  const imageURL = `${params.url || ADOBE_COMMERCE_DOMAIN}${IMAGE_PATH}${file}` 
+  return imageURL
+  
 }
 
 exports.main = main

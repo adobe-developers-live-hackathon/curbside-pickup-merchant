@@ -4,6 +4,23 @@
 
 /* This file exposes some common utilities for your actions */
 
+
+async function getCommerceToken(params) {
+  const data = {"username": params.user, "password": params.pw}
+
+  // Get integration token from Adobe Commerce.
+  const accessTokenRes = await fetch(`${params.url}/index.php/rest/V1/integration/admin/token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data)
+  })
+  const token = await accessTokenRes.json()
+
+  return token
+}
+
 /**
  *
  * Returns a log ready string of the action input parameters.
@@ -133,5 +150,6 @@ module.exports = {
   errorResponse,
   getBearerToken,
   stringParameters,
-  checkMissingRequestInputs
+  checkMissingRequestInputs,
+  getCommerceToken
 }
